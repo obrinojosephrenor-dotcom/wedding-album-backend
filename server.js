@@ -22,6 +22,9 @@ app.use("/api/guest", guestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/upload", uploadRoutes);
+app.get("/test-photo-route", (req, res) => {
+  res.send("photo route exists");
+});
 
 const PORT = process.env.PORT || 5000;
 
