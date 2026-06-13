@@ -1,8 +1,10 @@
-    import { Router } from 'express'
-    import { getPhotos, deletePhoto } from '../controllers/photoController.js'
-    import { adminAuth } from '../middleware/auth.js'
+const express = require("express");
+const router = express.Router();
 
-    const router = Router()
-    router.get('/',       getPhotos)
-    router.delete('/:id', adminAuth, deletePhoto)
-    export default router
+const { getPhotos, deletePhoto } = require("../controllers/photoController");
+const { adminAuth } = require("../middleware/auth");
+
+router.get("/", getPhotos);
+router.delete("/:id", adminAuth, deletePhoto);
+
+module.exports = router;

@@ -1,7 +1,9 @@
-import { Router } from 'express'
-import { createGuest, getGuest } from '../controllers/guestController.js'
+const express = require("express");
+const router = express.Router();
 
-const router = Router()
-router.post('/',    createGuest)
-router.get('/:id',  getGuest)
-export default router
+const { createGuest, getGuest } = require("../controllers/guestController");
+
+router.post("/", createGuest);
+router.get("/:id", getGuest);
+
+module.exports = router;
