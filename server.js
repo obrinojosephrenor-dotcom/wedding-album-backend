@@ -1,11 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const guestRoutes = require("./routes/guest");
-const adminRoutes = require("./routes/admin");
-const photoRoutes = require("./routes/photo");
-const uploadRoutes = require("./routes/upload");
+import guestRoutes from "./routes/guest.js";
+import adminRoutes from "./routes/admin.js";
+import photoRoutes from "./routes/photo.js";
+import uploadRoutes from "./routes/upload.js";
+
+dotenv.config();
 
 const app = express();
 
@@ -13,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Wedding Album API Running");
+  res.send("Wedding Album API Running V2");
 });
 
 app.get("/test-photo-route", (req, res) => {
@@ -25,11 +27,11 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/upload", uploadRoutes);
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-    path: req.originalUrl,
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  res.status(500).json({
+    error: err.message || "Server Error",
   });
 });
 
