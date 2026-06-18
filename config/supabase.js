@@ -3,13 +3,13 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_EY')
 }
 
 export const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_SERVICE_KEY,
   {
     auth: { persistSession: false }
   }
