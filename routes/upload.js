@@ -1,9 +1,9 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+import { upload } from "../config/cloudinary.js";
+import { uploadPhoto } from "../controllers/uploadController.js";
 
-const { upload } = require("../config/cloudinary");
-const { uploadPhoto } = require("../controllers/uploadController");
+const router = Router();
 
 router.post("/", upload.single("photo"), uploadPhoto);
 
-module.exports = router;
+export default router;

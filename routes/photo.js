@@ -1,10 +1,10 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+import { getPhotos, deletePhoto } from "../controllers/photoController.js";
+import { adminAuth } from "../middleware/auth.js";
 
-const { getPhotos, deletePhoto } = require("../controllers/photoController");
-const { adminAuth } = require("../middleware/auth");
+const router = Router();
 
 router.get("/", getPhotos);
 router.delete("/:id", adminAuth, deletePhoto);
 
-module.exports = router;
+export default router;
