@@ -13,39 +13,17 @@ import uploadRoutes from "./routes/upload.js";
 const app = express();
 
 
-/* ─────────────────────────────────────────
-   CORS CONFIGURATION
-───────────────────────────────────────── */
 
-const allowedOrigins = [
-  "https://wedding-album-frontend-dun.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000"
-];
+/*
+=================================
+CORS FIX
+=================================
+*/
 
 
-app.use(cors({
+const corsOptions = {
 
-  origin: function(origin, callback){
-
-    // Allow requests without origin
-    // (Postman, mobile apps, server-side calls)
-    if(!origin){
-      return callback(null, true);
-    }
-
-
-    if(allowedOrigins.includes(origin)){
-      return callback(null, true);
-    }
-
-
-    return callback(
-      new Error("CORS blocked: Origin not allowed")
-    );
-
-  },
-
+  origin: "https://wedding-album-frontend-dun.vercel.app",
 
   methods:[
     "GET",
@@ -54,26 +32,32 @@ app.use(cors({
     "OPTIONS"
   ],
 
-
   allowedHeaders:[
     "Content-Type",
     "x-admin-password"
   ],
 
-
   credentials:true
 
-}));
+};
 
 
-// Handle browser preflight requests
-app.options("*", cors());
+// MUST BE FIRST
+app.use(cors(corsOptions));
+
+
+// MUST HANDLE PREFLIGHT
+app.options("*", cors(corsOptions));
 
 
 
-/* ─────────────────────────────────────────
-   BODY PARSERS
-───────────────────────────────────────── */
+
+/*
+=================================
+BODY PARSER
+=================================
+*/
+
 
 app.use(express.json({
   limit:"50mb"
@@ -81,29 +65,26 @@ app.use(express.json({
 
 
 app.use(express.urlencoded({
-
   extended:true,
-
   limit:"50mb"
-
 }));
 
 
 
-/* ─────────────────────────────────────────
-   HEALTH CHECK
-───────────────────────────────────────── */
+
+/*
+=================================
+TEST
+=================================
+*/
 
 
-app.get("/", (req,res)=>{
+app.get("/",(req,res)=>{
 
-  res.json({
-
-    message:"Wedding Album API Running 🌸",
-
-    status:"ok"
-
-  });
+res.json({
+ message:"Wedding Album API Running",
+ status:"ok"
+});
 
 });
 
@@ -111,114 +92,60 @@ app.get("/", (req,res)=>{
 
 app.get("/health",(req,res)=>{
 
-  res.json({
-
-    status:"ok",
-
-    timestamp:new Date().toISOString()
-
-  });
+res.json({
+ status:"ok"
+});
 
 });
 
 
 
-/* ─────────────────────────────────────────
-   API ROUTES
-───────────────────────────────────────── */
 
 
-app.use(
-  "/api/guest",
-  guestRoutes
-);
+/*
+=================================
+ROUTES
+=================================
+*/
 
 
-app.use(
-  "/api/admin",
-  adminRoutes
-);
+app.use("/api/guest", guestRoutes);
 
+app.use("/api/admin", adminRoutes);
 
-app.use(
-  "/api/photos",
-  photoRoutes
-);
+app.use("/api/photos", photoRoutes);
 
-
-app.use(
-  "/api/upload",
-  uploadRoutes
-);
+app.use("/api/upload", uploadRoutes);
 
 
 
-/* ─────────────────────────────────────────
-   GLOBAL ERROR HANDLER
-───────────────────────────────────────── */
+
+
+
+/*
+=================================
+ERROR HANDLER
+=================================
+*/
 
 
 app.use((err,req,res,next)=>{
 
 
-  console.error("SERVER ERROR:", err);
+console.error(err);
 
 
-  if(err.message?.includes("Only JPG")){
+res.status(500).json({
 
-    return res.status(400).json({
+error:err.message || "Server Error"
 
-      error:err.message
-
-    });
-
-  }
-
-
-
-  if(err.code === "LIMIT_FILE_SIZE"){
-
-    return res.status(400).json({
-
-      error:"File must be under 10MB"
-
-    });
-
-  }
-
-
-
-  if(err.message?.includes("CORS")){
-
-    return res.status(403).json({
-
-      error:"CORS blocked"
-
-    });
-
-  }
-
-
-
-  res.status(
-    err.status || 500
-  )
-  .json({
-
-    error:
-      err.message ||
-      "Internal Server Error"
-
-  });
+});
 
 
 });
 
 
 
-/* ─────────────────────────────────────────
-   START SERVER
-───────────────────────────────────────── */
 
 
 const PORT =
@@ -228,10 +155,8 @@ process.env.PORT || 5000;
 
 app.listen(PORT,()=>{
 
-
-  console.log(
-    `🌸 Wedding Album API running on port ${PORT}`
-  );
-
+console.log(
+`🌸 Wedding Album API running ${PORT}`
+);
 
 });
