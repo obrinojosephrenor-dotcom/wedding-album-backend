@@ -18,7 +18,7 @@ create table if not exists guests (
 create table if not exists photos (
   id         uuid        primary key default gen_random_uuid(),
   guest_id   uuid        references guests(id) on delete set null,
-  guest_name text        ,
+  guest_name text,
   image_url  text        not null,
   public_id  text        not null,
   created_at timestamptz not null default now()

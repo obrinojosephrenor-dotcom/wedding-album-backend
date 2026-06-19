@@ -1,32 +1,34 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import dotenv from "dotenv";
+
+import guestRoutes from "./routes/guest.js";
+import photoRoutes from "./routes/photo.js";
+import adminRoutes from "./routes/admin.js";
+import uploadRoutes from "./routes/upload.js";
+
+import { generalLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
-
-import guestRoutes from "./routes/guest.js";
-import adminRoutes from "./routes/admin.js";
-import photoRoutes from "./routes/photo.js";
-import uploadRoutes from "./routes/upload.js";
-
-
-
 const app = express();
 
+const PORT = process.env.PORT || 5000;
 
 
 /*
 =================================
-RENDER PROXY FIX
+SECURITY
 =================================
 */
 
-app.set(
-  "trust proxy",
-  true
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false
+  })
 );
-
 
 
 /*
@@ -35,174 +37,184 @@ CORS
 =================================
 */
 
-
 const allowedOrigins = [
-
+  process.env.FRONTEND_URL,
   "https://wedding-album-frontend-dun.vercel.app",
-
   "http://localhost:5173"
-
 ];
 
 
+app.use(
+  cors({
 
-app.use(cors({
+    origin(origin, callback){
 
-  origin:function(origin,callback){
-
-
-    if(!origin){
-
-      return callback(null,true);
-
-    }
+      // allow Postman / server requests
+      if(!origin){
+        return callback(null,true);
+      }
 
 
-    if(allowedOrigins.includes(origin)){
+      if(
+        allowedOrigins.includes(origin)
+      ){
 
-      return callback(null,true);
+        return callback(null,true);
 
-    }
-
-
-    callback(
-      new Error("CORS blocked")
-    );
+      }
 
 
-  },
+      console.log(
+        "Blocked CORS origin:",
+        origin
+      );
 
 
-  methods:[
+      callback(
+        new Error("CORS blocked")
+      );
 
-    "GET",
-    "POST",
-    "DELETE",
-    "OPTIONS"
-
-  ],
+    },
 
 
-  allowedHeaders:[
-
-    "Content-Type",
-    "x-admin-password"
-
-  ],
+    credentials:true,
 
 
-  credentials:true
+    methods:[
+      "GET",
+      "POST",
+      "DELETE",
+      "OPTIONS"
+    ],
 
 
-}));
+    allowedHeaders:[
+      "Content-Type",
+      "x-admin-password"
+    ]
 
-
-
-app.options("*",cors());
-
+  })
+);
 
 
 
 /*
 =================================
-BODY
+MIDDLEWARE
 =================================
 */
 
-
-app.use(express.json({
-
- limit:"50mb"
-
-}));
+app.use(
+  morgan("dev")
+);
 
 
-app.use(express.urlencoded({
-
- extended:true,
-
- limit:"50mb"
-
-}));
+app.use(
+  express.json({
+    limit:"50mb"
+  })
+);
 
 
+app.use(
+  express.urlencoded({
+
+    extended:true,
+
+    limit:"50mb"
+
+  })
+);
+
+
+app.use(
+  generalLimiter
+);
 
 
 
 /*
 =================================
-TEST
+TEST ROUTES
 =================================
 */
 
 
 app.get("/",(req,res)=>{
 
+  res.json({
 
-res.json({
+    message:"Wedding Album API Running 🌸",
 
-message:"Wedding Album API Running 🌸",
+    status:"ok"
 
-status:"ok"
-
-});
-
+  });
 
 });
-
-
 
 
 app.get("/health",(req,res)=>{
 
+  res.json({
 
-res.json({
+    status:"ok"
 
-status:"ok"
-
-});
-
+  });
 
 });
-
-
 
 
 
 /*
 =================================
-ROUTES
+API ROUTES
 =================================
 */
 
 
 app.use(
-"/api/guest",
-guestRoutes
+  "/api/guest",
+  guestRoutes
 );
-
 
 
 app.use(
-"/api/admin",
-adminRoutes
+  "/api/photos",
+  photoRoutes
 );
-
 
 
 app.use(
-"/api/photos",
-photoRoutes
+  "/api/admin",
+  adminRoutes
 );
-
 
 
 app.use(
-"/api/upload",
-uploadRoutes
+  "/api/upload",
+  uploadRoutes
 );
 
 
+
+/*
+=================================
+404
+=================================
+*/
+
+
+app.use(
+(req,res)=>{
+
+  res.status(404)
+  .json({
+
+    error:"Not found"
+
+  });
+
+});
 
 
 
@@ -213,7 +225,8 @@ ERROR HANDLER
 */
 
 
-app.use((err,req,res,next)=>{
+app.use(
+(err,req,res,next)=>{
 
 
 console.error(
@@ -240,20 +253,12 @@ err.message ||
 
 
 
-
-const PORT =
-process.env.PORT || 5000;
-
-
-
-app.listen(PORT,()=>{
-
+app.listen(
+PORT,
+()=>{
 
 console.log(
-
-`🌸 Wedding Album API running on ${PORT}`
-
+`🌸 Server running on port ${PORT}`
 );
-
 
 });
