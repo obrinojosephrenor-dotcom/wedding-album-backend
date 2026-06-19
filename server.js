@@ -4,8 +4,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 
-import guestRoutes from "./routes/guest.js";
-import photoRoutes from "./routes/photo.js";
+import guestRoutes from "./routes/guests.js";
+import photoRoutes from "./routes/photos.js";
 import adminRoutes from "./routes/admin.js";
 import uploadRoutes from "./routes/upload.js";
 
@@ -16,7 +16,6 @@ dotenv.config();
 
 
 const app = express();
-
 
 const PORT = process.env.PORT || 5000;
 
