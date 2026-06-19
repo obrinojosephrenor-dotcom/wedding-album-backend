@@ -4,12 +4,13 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 
-import guestRoutes from "./routes/guests.js";
-import photoRoutes from "./routes/photos.js";
+import guestRoutes from "./routes/guest.js";
+import photoRoutes from "./routes/photo.js";
 import adminRoutes from "./routes/admin.js";
 import uploadRoutes from "./routes/upload.js";
 
 import { generalLimiter } from "./middleware/rateLimiter.js";
+
 
 dotenv.config();
 
@@ -20,325 +21,167 @@ const PORT = process.env.PORT || 5000;
 
 
 
-/*
-=================================
-SECURITY
-=================================
-*/
+// SECURITY
 
 app.use(
   helmet({
-    crossOriginResourcePolicy: false
+    crossOriginResourcePolicy:false
   })
 );
 
 
 
-/*
-=================================
-CORS
-=================================
-*/
-
-const allowedOrigins = [
-
-  process.env.FRONTEND_URL,
-
-  "https://wedding-album-frontend-dun.vercel.app",
-
-  "http://localhost:5173"
-
-];
-
+// CORS
 
 app.use(
-  cors({
+cors({
 
-    origin(origin, callback){
+origin:[
+process.env.FRONTEND_URL,
+"https://wedding-album-frontend-dun.vercel.app",
+"http://localhost:5173"
+],
 
+credentials:true
 
-      // allow Postman / Render internal requests
-      if(!origin){
-
-        return callback(null,true);
-
-      }
-
-
-      if(
-        allowedOrigins.includes(origin)
-      ){
-
-        return callback(null,true);
-
-      }
-
-
-      console.log(
-        "Blocked CORS origin:",
-        origin
-      );
-
-
-      callback(
-        new Error("CORS blocked")
-      );
-
-    },
-
-
-    credentials:true,
-
-
-    methods:[
-
-      "GET",
-      "POST",
-      "DELETE",
-      "OPTIONS"
-
-    ],
-
-
-    allowedHeaders:[
-
-      "Content-Type",
-      "x-admin-password"
-
-    ]
-
-
-  })
+})
 );
 
 
 
-/*
-=================================
-MIDDLEWARE
-=================================
-*/
-
+// LOGGER
 
 app.use(
-  morgan("dev")
+morgan("dev")
 );
 
 
 
+// BODY
+
 app.use(
-  express.json({
+express.json({
+limit:"50mb"
+})
+);
 
-    limit:"50mb"
 
-  })
+app.use(
+express.urlencoded({
+
+extended:true,
+
+limit:"50mb"
+
+})
 );
 
 
 
-app.use(
-  express.urlencoded({
+// RATE LIMIT
 
-    extended:true,
-
-    limit:"50mb"
-
-  })
-);
-
-
-
-app.use(
-  generalLimiter
-);
+app.use(generalLimiter);
 
 
 
 
+// TEST ROOT
 
-/*
-=================================
-TEST ROUTES
-=================================
-*/
-
-
-// Render health check
-app.get("/health",(req,res)=>{
-
-
-  res.json({
-
-    status:"ok"
-
-  });
-
-
-});
-
-
-
-// Root test
 app.get("/",(req,res)=>{
 
+res.json({
 
-  res.json({
+message:"Wedding Album API Running 🌸",
 
-    message:"Wedding Album API Running 🌸",
+status:"ok"
 
-    status:"ok"
-
-  });
-
+});
 
 });
 
 
 
 
+// HEALTH
 
-/*
-=================================
-API ROUTES
-=================================
-*/
+app.get("/health",(req,res)=>{
 
+res.json({
 
-app.use(
+status:"ok"
 
-  "/api/guests",
-
-  guestRoutes
-
-);
-
-
-
-app.use(
-
-  "/api/photos",
-
-  photoRoutes
-
-);
-
-
-
-app.use(
-
-  "/api/admin",
-
-  adminRoutes
-
-);
-
-
-
-app.use(
-
-  "/api/upload",
-
-  uploadRoutes
-
-);
-
-
-
-
-
-
-/*
-=================================
-404 HANDLER
-=================================
-*/
-
-
-app.use(
-
-(req,res)=>{
-
-
-  res.status(404)
-
-  .json({
-
-    error:"Not found"
-
-  });
-
-
-}
-
-);
-
-
-
-
-
-
-/*
-=================================
-ERROR HANDLER
-=================================
-*/
-
-
-app.use(
-
-(err,req,res,next)=>{
-
-
-console.error(
-
-"SERVER ERROR:",
-
-err
-
-);
-
-
-
-res.status(
-
-err.status || 500
-
-)
-
-.json({
-
-error:
-
-err.message ||
-
-"Server Error"
+});
 
 });
 
 
-}
 
+
+// ROUTES
+
+app.use(
+"/api/guest",
+guestRoutes
+);
+
+
+app.use(
+"/api/photos",
+photoRoutes
+);
+
+
+app.use(
+"/api/admin",
+adminRoutes
+);
+
+
+app.use(
+"/api/upload",
+uploadRoutes
 );
 
 
 
 
+// 404
+
+app.use((req,res)=>{
+
+res.status(404).json({
+
+error:"Not found"
+
+});
+
+});
 
 
-app.listen(
 
-PORT,
 
-()=>{
+// ERROR
 
+app.use((err,req,res,next)=>{
+
+console.error(err);
+
+
+res.status(500).json({
+
+error:err.message || "Server error"
+
+});
+
+});
+
+
+
+
+app.listen(PORT,()=>{
 
 console.log(
-
 `🌸 Server running on port ${PORT}`
-
 );
 
-
-}
-
-);
+});
