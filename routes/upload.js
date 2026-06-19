@@ -1,7 +1,6 @@
 import express from "express";
 
-import uploadLimiter 
-from "../middleware/uploadLimiter.js";
+import uploadLimiter from "../middleware/uploadLimiter.js";
 
 import upload 
 from "../middleware/upload.js";

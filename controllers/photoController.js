@@ -12,16 +12,15 @@ try{
 const page =
 Math.max(
 1,
-parseInt(req.query.page,10) || 1
+parseInt(req.query.page) || 1
 );
 
 
 const limit =
 Math.min(
 50,
-parseInt(req.query.limit,10) || 20
+parseInt(req.query.limit) || 20
 );
-
 
 
 const offset =
@@ -44,14 +43,11 @@ count
 .select(
 `
 id,
+guest_id,
+guest_name,
 image_url,
 public_id,
-created_at,
-
-guests(
-name
-)
-
+created_at
 `,
 {
 count:"exact"
@@ -81,9 +77,9 @@ throw error;
 
 res.json({
 
-photos: photos || [],
+photos:photos || [],
 
-total: count || 0,
+total:count || 0,
 
 page,
 
@@ -93,7 +89,6 @@ hasMore:
 offset + limit < (count || 0)
 
 });
-
 
 
 }
@@ -110,10 +105,8 @@ next(err);
 
 
 
-// DELETE
 
 export async function deletePhoto(req,res,next){
-
 
 try{
 
@@ -126,7 +119,7 @@ const {
 
 data:photo,
 
-error:fErr
+error
 
 }=await supabase
 
@@ -142,7 +135,7 @@ error:fErr
 
 
 
-if(fErr || !photo)
+if(error || !photo){
 
 return res.status(404)
 .json({
@@ -151,6 +144,7 @@ error:"Photo not found"
 
 });
 
+}
 
 
 
@@ -164,9 +158,6 @@ photo.public_id
 
 
 
-
-const {error:dErr}=
-
 await supabase
 
 .from("photos")
@@ -177,16 +168,9 @@ await supabase
 
 
 
-if(dErr)
-throw dErr;
-
-
-
 res.json({
 
-success:true,
-
-id
+success:true
 
 });
 
@@ -197,6 +181,5 @@ catch(err){
 next(err);
 
 }
-
 
 }
