@@ -5,7 +5,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 
 import guestRoutes from "./routes/guests.js";
-import photoRoutes from "./routes/photos.js";
+import photoRoutes from "./routes/photo.js";
 import adminRoutes from "./routes/admin.js";
 import uploadRoutes from "./routes/upload.js";
 
